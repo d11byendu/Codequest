@@ -1,1 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeQuest — Learn to Code</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <style>
+    /* ── DESIGN TOKENS ── */
+    :root {
+      --bg:          #0e0f14;
+      --bg3:         #1e2029;
+      --surface:     #23262f;
+      --border:      #2e3140;
+      --text:        #e8eaf0;
+      --muted:       #7b82a0;
+      --accent:      #6c63ff;
+      --accent2:     #ff6584;
+      --accent3:     #43d9ad;
+      --accent4:     #ffd166;
+      --radius:      14px;
+      --radius-sm:   8px;
+      --shadow:      0 4px 24px rgba(0,0,0,.45);
+      --ease:        .22s cubic-bezier(.4,0,.2,1);
+      --body:        'DM Sans', sans-serif;
+      --display:     'Syne', sans-serif;
+      --mono:        'DM Mono', monospace;
+    }
+    [data-theme="light"] {
+      --bg:      #f4f5fb;
+      --bg3:     #e4e6f4;
+      --surface: #ffffff;
+      --border:  #d0d3e8;
+      --text:    #1a1c2e;
+      --muted:   #6b6f8e;
+      --shadow:  0 4px 24px rgba(80,80,140,.12);
+    }
 
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: var(--body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background var(--ease), color var(--ease);
+    }
+
+    /* ── PAGE SYSTEM ── only .active page is shown ── */
+    .page {
+      display: none;
+      padding: 70px 16px 40px;
+      max-width: 640px;
+      margin: 0 auto;
+      animation: fadeUp .3s ease both;
+    }
+    .page.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── TOP NAV ── */
+    .topnav {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      z-index: 999;
+      transition: background var(--ease);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--display); font-weight: 800; font-size: 1.1rem;
+      letter-spacing: -.5px; color: var(--text);
+    }
+    .brand-icon { animation: pulse 2.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+
+    /* theme toggle */
+    .theme-toggle { background: none; border: none; cursor: pointer; padding: 0; }
+    .toggle-track {
+      width: 54px; height: 28px; border-radius: 99px;
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; align-items: center; position: relative;
+      transition: background var(--ease);
+    }
+    .toggle-thumb {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); position: absolute; left: 4px;
+      transition: transform var(--ease);
+    }
+    [data-theme="light"] .toggle-thumb { transform: translateX(26px); }
+    .toggle-icon { position: absolute; font-size: 11px; user-select: none; pointer-events: none; }
+    .toggle-icon.sun  { right: 6px; }
+    .toggle-icon.moon { left:  6px; }
+
+    /* back button */
+    .btn-back {
+      display: none;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); font-family: var(--body); font-size: .83rem;
+      font-weight: 500; padding: 6px 14px; border-radius: 99px; cursor: pointer;
+      transition: background var(--ease), transform var(--ease);
+    }
+    .btn-back:hover { background: var(--bg3); transform: translateX(-2px); }
+
+    /* ── HERO ── */
+    .hero { text-align: center; padding: 20px 0 18px; }
+    .hero-tag {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: .76rem; font-weight: 600;
+      padding: 5px 14px; border-radius: 99px; margin-bottom: 14px;
+    }
+    .hero-title {
+      font-family: var(--display); font-size: clamp(1.9rem,8vw,2.7rem);
+      font-weight: 800; line-height: 1.1; letter-spacing: -1.5px;
+      margin-bottom: 12px;
+    }
+    .hero-title em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero-sub { color: var(--muted); font-size: .9rem; line-height: 1.6; max-width: 300px; margin: 0 auto; }
+
+    /* ── PROGRESS BAR (reused everywhere) ── */
+    .prog-wrap {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 16px; margin: 18px 0;
+    }
+    .prog-label {
+      display: flex; justify-content: space-between;
+      font-size: .8rem; font-weight: 500; color: var(--muted); margin-bottom: 8px;
+    }
+    .prog-track {
+      height: 8px; background: var(--bg3); border-radius: 99px; overflow: hidden;
+    }
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px; transition: width .6s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── CARDS GRID ── */
+    .cards-grid {
+      display: grid; grid-template-columns: repeat(2,1fr); gap: 13px; margin-top: 4px;
+    }
+    .lang-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 14px 14px;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+      animation: cardIn .4s ease both;
+    }
+    .lang-card:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: var(--shadow); border-color: var(--accent);
+    }
+    .lang-card:active { transform: scale(.97); }
+    .lang-card:nth-child(1){animation-delay:.05s}
+    .lang-card:nth-child(2){animation-delay:.10s}
+    .lang-card:nth-child(3){animation-delay:.15s}
+    .lang-card:nth-child(4){animation-delay:.20s}
+    .lang-card:nth-child(5){animation-delay:.25s}
+    .lang-card:nth-child(6){animation-delay:.30s}
+    @keyframes cardIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .lang-card::before {
+      content:''; position:absolute; top:0; left:0; right:0;
+      height:3px; background:var(--card-color,var(--accent));
+      transition: height .2s ease;
+    }
+    .lang-card:hover::before { height: 5px; }
+    .card-icon { font-size: 1.9rem; margin-bottom: 9px; display: block; }
+    .card-name { font-family: var(--display); font-size: .95rem; font-weight: 700; margin-bottom: 4px; }
+    .card-desc { font-size: .73rem; color: var(--muted); line-height: 1.45; margin-bottom: 11px; }
+    .card-prog { display: flex; align-items: center; gap: 7px; }
+    .card-prog-bar { flex:1; height:4px; background:var(--bg3); border-radius:99px; overflow:hidden; }
+    .card-prog-fill { height:100%; background:var(--card-color,var(--accent)); border-radius:99px; transition:width .6s ease; }
+    .card-prog-pct { font-size:.68rem; font-weight:600; color:var(--muted); min-width:26px; text-align:right; }
+
+    /* ── LESSONS PAGE HEADER ── */
+    .lesson-header { padding: 6px 0 14px; text-align: center; }
+    .lang-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 5px 14px; border-radius: 99px; font-size: .8rem; font-weight: 600; margin-bottom: 8px;
+    }
+    .lesson-page-title { font-family: var(--display); font-size: 1.5rem; font-weight: 800; margin-bottom: 12px; }
+    .lang-prog-wrap { display:flex; flex-direction:column; gap:5px; font-size:.78rem; color:var(--muted); font-weight:500; }
+
+    /* ── TABS ── */
+    .tab-bar {
+      display: flex; gap: 5px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 99px; padding: 4px; margin-bottom: 16px;
+    }
+    .tab {
+      flex:1; background:none; border:none; color:var(--muted);
+      font-family:var(--body); font-size:.83rem; font-weight:500;
+      padding:8px 10px; border-radius:99px; cursor:pointer;
+      transition:background var(--ease),color var(--ease);
+    }
+    .tab.active { background:var(--accent); color:#fff; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+
+    /* ── LESSONS LIST ── */
+    .lessons-list { display:flex; flex-direction:column; gap:9px; }
+    .lesson-item {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:13px 15px;
+      display:flex; align-items:center; gap:13px;
+      cursor:pointer;
+      transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+    }
+    .lesson-item:hover { transform:translateX(4px); border-color:var(--accent); box-shadow:-3px 0 0 var(--accent); }
+    .lesson-item.completed { opacity:.75; }
+    .lesson-num {
+      width:33px; height:33px; border-radius:50%;
+      background:var(--bg3); border:2px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--mono); font-size:.78rem; font-weight:600; flex-shrink:0;
+    }
+    .lesson-item.completed .lesson-num { background:var(--accent3); border-color:var(--accent3); color:#0e0f14; }
+    .lesson-info { flex:1; }
+    .lesson-title { font-weight:600; font-size:.9rem; margin-bottom:2px; }
+    .lesson-meta { font-size:.72rem; color:var(--muted); }
+    .lesson-chevron { color:var(--muted); font-size:1.1rem; }
+    .difficulty {
+      font-size:.63rem; font-weight:700; letter-spacing:.5px;
+      text-transform:uppercase; padding:2px 7px; border-radius:99px;
+    }
+    .difficulty.beginner     { background:rgba(67,217,173,.15); color:var(--accent3); }
+    .difficulty.intermediate { background:rgba(255,209,102,.15); color:var(--accent4); }
+    .difficulty.advanced     { background:rgba(255,101,132,.15); color:var(--accent2); }
+
+    /* ── LESSON DETAIL ── */
+    .lesson-detail-wrap { padding-bottom:32px; }
+    .lesson-detail-header { margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+    .lesson-detail-title { font-family:var(--display); font-size:1.4rem; font-weight:800; margin:7px 0 5px; line-height:1.2; }
+    .lesson-detail-meta { font-size:.78rem; color:var(--muted); display:flex; gap:11px; flex-wrap:wrap; }
+    .lesson-body { font-size:.91rem; line-height:1.75; }
+    .lesson-body p  { margin-bottom:13px; }
+    .lesson-body h3 { font-family:var(--display); font-size:1rem; font-weight:700; margin:18px 0 7px; }
+    .lesson-body code {
+      font-family:var(--mono); font-size:.84em;
+      background:var(--bg3); color:var(--accent3); padding:2px 6px; border-radius:5px;
+    }
+    .code-block {
+      background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm);
+      padding:15px; font-family:var(--mono); font-size:.81rem; line-height:1.7;
+      overflow-x:auto; margin:11px 0 17px; color:var(--accent4); white-space:pre;
+    }
+    .key-point {
+      background:linear-gradient(135deg,rgba(108,99,255,.12),rgba(255,101,132,.08));
+      border:1px solid rgba(108,99,255,.25); border-radius:var(--radius-sm);
+      padding:11px 15px; margin:13px 0; font-size:.86rem;
+    }
+    .key-point strong { color:var(--accent); }
+    .btn-start-quiz {
+      display:block; width:100%; margin-top:22px; padding:14px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      border:none; color:#fff; font-family:var(--display); font-size:.98rem;
+      font-weight:700; border-radius:var(--radius); cursor:pointer;
+      transition:opacity .2s,transform .2s;
+    }
+    .btn-start-quiz:hover  { opacity:.9; transform:translateY(-2px); }
+    .btn-start-quiz:active { transform:scale(.98); }
+
+    /* ── QUIZ ── */
+    .quiz-wrap { padding-bottom:32px; }
+    .quiz-header { text-align:center; margin-bottom:22px; }
+    .quiz-title { font-family:var(--display); font-size:1.35rem; font-weight:800; margin-bottom:5px; }
+    .quiz-prog-text { font-size:.8rem; color:var(--muted); }
+    .quiz-q-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:18px; margin-bottom:14px;
+    }
+    .question-text { font-size:.95rem; font-weight:600; line-height:1.5; margin-bottom:16px; }
+    .options-list { display:flex; flex-direction:column; gap:9px; list-style:none; }
+    .option-btn {
+      background:var(--bg3); border:1.5px solid var(--border);
+      border-radius:var(--radius-sm); color:var(--text);
+      font-family:var(--body); font-size:.86rem;
+      padding:11px 15px; text-align:left; cursor:pointer; width:100%;
+      transition:border-color .18s,background .18s,transform .15s;
+    }
+    .option-btn:hover    { border-color:var(--accent); transform:translateX(3px); }
+    .option-btn.correct  { border-color:var(--accent3); background:rgba(67,217,173,.12); color:var(--accent3); }
+    .option-btn.wrong    { border-color:var(--accent2); background:rgba(255,101,132,.12); color:var(--accent2); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback {
+      font-size:.83rem; padding:9px 13px; border-radius:var(--radius-sm);
+      margin-top:11px; font-weight:500; display:none;
+    }
+    .quiz-feedback.show    { display:block; }
+    .quiz-feedback.correct { background:rgba(67,217,173,.12); color:var(--accent3); }
+    .quiz-feedback.wrong   { background:rgba(255,101,132,.12); color:var(--accent2); }
+    .btn-next-q {
+      width:100%; margin-top:13px; padding:13px;
+      background:var(--accent); border:none; color:#fff;
+      font-family:var(--display); font-size:.93rem; font-weight:700;
+      border-radius:var(--radius); cursor:pointer;
+      transition:opacity .2s,transform .2s; display:none;
+    }
+    .btn-next-q.show  { display:block; }
+    .btn-next-q:hover { opacity:.88; transform:translateY(-2px); }
+
+    /* ── RESULT ── */
+    .result-wrap { text-align:center; padding:28px 0; }
+    .result-emoji {
+      font-size:3.8rem; margin-bottom:14px; display:block;
+      animation:bounceIn .6s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    @keyframes bounceIn { 0%{transform:scale(0);opacity:0} 60%{transform:scale(1.15);opacity:1} 100%{transform:scale(1)} }
+    .result-title { font-family:var(--display); font-size:1.6rem; font-weight:800; margin-bottom:7px; }
+    .result-score { font-size:.95rem; color:var(--muted); margin-bottom:22px; }
+    .score-circle {
+      width:118px; height:118px; border-radius:50%;
+      background:conic-gradient(var(--accent) var(--score-deg,0deg),var(--bg3) 0deg);
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto 22px; position:relative;
+    }
+    .score-circle::after {
+      content:''; width:86px; height:86px; border-radius:50%;
+      background:var(--bg); position:absolute;
+    }
+    .score-circle-text {
+      position:relative; z-index:1;
+      font-family:var(--display); font-size:1.45rem; font-weight:800;
+    }
+    .result-message { font-size:.88rem; color:var(--muted); max-width:270px; margin:0 auto 26px; line-height:1.6; }
+    .result-actions { display:flex; flex-direction:column; gap:9px; }
+    .btn-primary {
+      padding:13px 24px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      border:none; color:#fff; font-family:var(--display); font-size:.93rem;
+      font-weight:700; border-radius:var(--radius); cursor:pointer;
+      transition:opacity .2s,transform .2s;
+    }
+    .btn-primary:hover { opacity:.88; transform:translateY(-2px); }
+    .btn-secondary {
+      padding:13px 24px; background:var(--surface); border:1px solid var(--border);
+      color:var(--text); font-family:var(--display); font-size:.93rem;
+      font-weight:700; border-radius:var(--radius); cursor:pointer;
+      transition:background .18s,transform .2s;
+    }
+    .btn-secondary:hover { background:var(--bg3); transform:translateY(-2px); }
+
+    /* ── CODE EDITOR ── */
+    .editor-wrap { display:flex; flex-direction:column; gap:9px; }
+    .editor-toolbar {
+      display:flex; align-items:center; gap:8px;
+      background:var(--bg3); border:1px solid var(--border);
+      border-radius:var(--radius-sm) var(--radius-sm) 0 0; padding:8px 12px;
+    }
+    .editor-lang-label { font-family:var(--mono); font-size:.76rem; font-weight:500; color:var(--accent3); flex:1; }
+    .btn-run {
+      background:var(--accent3); border:none; color:#0e0f14;
+      font-family:var(--body); font-size:.78rem; font-weight:700;
+      padding:6px 13px; border-radius:99px; cursor:pointer;
+      transition:opacity .18s,transform .15s;
+    }
+    .btn-run:hover { opacity:.85; transform:scale(1.05); }
+    .btn-clear {
+      background:var(--surface); border:1px solid var(--border); color:var(--muted);
+      font-family:var(--body); font-size:.78rem; padding:6px 12px;
+      border-radius:99px; cursor:pointer; transition:background .15s;
+    }
+    .btn-clear:hover { background:var(--bg3); }
+    .code-editor {
+      width:100%; min-height:210px;
+      background:var(--bg); border:1px solid var(--border); border-top:none;
+      border-radius:0 0 var(--radius-sm) var(--radius-sm);
+      color:var(--accent4); font-family:var(--mono); font-size:.82rem;
+      line-height:1.7; padding:13px; resize:vertical; outline:none;
+      transition:border-color .2s;
+    }
+    .code-editor:focus { border-color:var(--accent); }
+    .editor-output-label {
+      font-size:.76rem; font-weight:600; color:var(--muted);
+      text-transform:uppercase; letter-spacing:.5px;
+    }
+    .editor-output {
+      background:var(--bg); border:1px solid var(--border);
+      border-radius:var(--radius-sm); padding:13px;
+      font-family:var(--mono); font-size:.8rem; line-height:1.7;
+      color:var(--accent3); min-height:78px; white-space:pre-wrap;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width:5px; height:5px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:99px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width:360px) {
+      .cards-grid { grid-template-columns:1fr; }
+      .hero-title  { font-size:1.65rem; }
+    }
+    @media (min-width:480px) {
+      .page       { padding:78px 24px 48px; }
+      .cards-grid { gap:15px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAV ===== -->
+  <nav class="topnav">
+    <div class="nav-brand">
+      <span class="brand-icon">⚡</span>
+      <span>CodeQuest</span>
+    </div>
+    <div class="nav-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <span class="toggle-track">
+          <span class="toggle-thumb"></span>
+          <span class="toggle-icon sun">☀️</span>
+          <span class="toggle-icon moon">🌙</span>
+        </span>
+      </button>
+      <button class="btn-back" id="btnBack">← Back</button>
+    </div>
+  </nav>
+
+  <!-- ===== HOME ===== -->
+  <section class="page active" id="page-home">
+    <div class="hero">
+      <div class="hero-tag">🚀 Your coding journey starts here</div>
+      <h1 class="hero-title">Learn. Code.<br><em>Level&nbsp;Up.</em></h1>
+      <p class="hero-sub">Pick a language below and start your adventure — lessons, quizzes, and a live editor all in one place.</p>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-label"><span>Overall Progress</span><span id="overallPercent">0%</span></div>
+      <div class="prog-track"><div class="prog-fill" id="overallBar" style="width:0%"></div></div>
+    </div>
+    <div class="cards-grid" id="cardsGrid"></div>
+  </section>
+
+  <!-- ===== LESSONS ===== -->
+  <section class="page" id="page-lessons">
+    <div class="lesson-header">
+      <div class="lang-badge" id="lessonLangBadge"></div>
+      <h2 class="lesson-page-title" id="lessonPageTitle">Lessons</h2>
+      <div class="lang-prog-wrap">
+        <span id="langProgressLabel">0% complete</span>
+        <div class="prog-track"><div class="prog-fill" id="langProgressBar" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <button class="tab active" data-tab="lessons">📚 Lessons</button>
+      <button class="tab" data-tab="editor">💻 Editor</button>
+    </div>
+    <div class="tab-content active" id="tab-lessons">
+      <div class="lessons-list" id="lessonsList"></div>
+    </div>
+    <div class="tab-content" id="tab-editor">
+      <div class="editor-wrap">
+        <div class="editor-toolbar">
+          <span class="editor-lang-label" id="editorLangLabel">Python</span>
+          <button class="btn-run" id="btnRun">▶ Run</button>
+          <button class="btn-clear" id="btnClear">✕ Clear</button>
+        </div>
+        <textarea class="code-editor" id="codeEditor" spellcheck="false" placeholder="// Write your code here and click Run!"></textarea>
+        <div class="editor-output-label">Output:</div>
+        <div class="editor-output" id="editorOutput">Your output will appear here…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== LESSON DETAIL ===== -->
+  <section class="page" id="page-lesson-detail">
+    <div class="lesson-detail-wrap" id="lessonDetailWrap"></div>
+  </section>
+
+  <!-- ===== QUIZ ===== -->
+  <section class="page" id="page-quiz">
+    <div class="quiz-wrap" id="quizWrap"></div>
+  </section>
+
+  <!-- ===== RESULT ===== -->
+  <section class="page" id="page-result">
+    <div class="result-wrap" id="resultWrap"></div>
+  </section>
+
+  <script>
+    "use strict";
+
+    /* ============================================================
+       DATA
+    ============================================================ */
+    const LANGUAGES = [
+      {
+        id:"python", name:"Python", icon:"🐍",
+        desc:"Simple & powerful. Great first language.", color:"#3776ab",
+        lessons:[
+          {
+            id:"py-1", title:"Hello, World!", difficulty:"beginner", duration:"5 min",
+            content:`
+              <p>Welcome to Python! Python reads almost like plain English, making it perfect for beginners.</p>
+              <h3>Your First Program</h3>
+              <p>Use the <code>print()</code> function to display text on screen:</p>
+              <div class="code-block">print("Hello, World!")</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> Anything inside <code>print()</code> gets displayed. Text must be wrapped in quotes.</div>
+              <h3>Comments</h3>
+              <p>Comments explain your code — Python ignores them when running.</p>
+              <div class="code-block"># This is a comment
+print("Comments make code readable!")</div>
+            `,
+            quiz:[
+              {q:"Which function displays text in Python?", options:["show()","print()","display()","write()"], answer:1},
+              {q:"How do you write a comment in Python?", options:["// comment","/* comment */","# comment","-- comment"], answer:2},
+              {q:"What happens when you run: print('Hi')?", options:["Nothing","'Hi' appears on screen","Error occurs","File is saved"], answer:1},
+            ]
+          },
+          {
+            id:"py-2", title:"Variables & Data Types", difficulty:"beginner", duration:"8 min",
+            content:`
+              <p>Variables are like labelled boxes that store information.</p>
+              <h3>Creating Variables</h3>
+              <div class="code-block">name = "Alice"      # string (text)
+age  = 25           # integer (whole number)
+gpa  = 3.8          # float (decimal)
+is_student = True   # boolean (True/False)</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> Python figures out the data type automatically — you don't need to declare it!</div>
+              <h3>Using Variables</h3>
+              <div class="code-block">name = "Alice"
+age  = 25
+print("My name is", name)
+print("I am", age, "years old")</div>
+            `,
+            quiz:[
+              {q:"What data type is the value 3.14?", options:["int","str","float","bool"], answer:2},
+              {q:"Which stores a boolean value?", options:['name="Bob"',"score=99","passed=True","rate=4.5"], answer:2},
+              {q:"How do you store text in Python?", options:["Curly braces {}","Wrap in quotes","Square brackets []","Type keywords"], answer:1},
+            ]
+          },
+          {
+            id:"py-3", title:"If / Else Statements", difficulty:"beginner", duration:"10 min",
+            content:`
+              <p>The <code>if</code> statement lets programs make decisions.</p>
+              <h3>Basic If / Else</h3>
+              <div class="code-block">age = 18
+if age >= 18:
+    print("You can vote!")
+else:
+    print("Too young to vote.")</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> Python uses <strong>indentation</strong> (4 spaces) to define code blocks — not curly braces!</div>
+              <h3>elif for Multiple Conditions</h3>
+              <div class="code-block">score = 85
+if score >= 90:
+    print("Grade: A")
+elif score >= 80:
+    print("Grade: B")
+else:
+    print("Grade: F")</div>
+            `,
+            quiz:[
+              {q:"What keyword checks additional conditions?", options:["else if","elseif","elif","or if"], answer:2},
+              {q:"What does Python use to define code blocks?", options:["Curly braces {}","Parentheses ()","Indentation (spaces)","Square brackets []"], answer:2},
+              {q:"Which operator means 'greater than or equal to'?", options:[">",">=","=>",">>"], answer:1},
+            ]
+          },
+          {
+            id:"py-4", title:"Loops", difficulty:"intermediate", duration:"12 min",
+            content:`
+              <p>Loops repeat code automatically — no copy-pasting needed!</p>
+              <h3>For Loop</h3>
+              <div class="code-block">fruits = ["apple","banana","cherry"]
+for fruit in fruits:
+    print("I like", fruit)
+
+# Loop a specific number of times:
+for i in range(5):
+    print("Count:", i)  # prints 0,1,2,3,4</div>
+              <h3>While Loop</h3>
+              <div class="code-block">count = 0
+while count < 3:
+    print("Hello!", count)
+    count += 1  # always update the condition!</div>
+              <div class="key-point"><strong>⚠️ Watch out:</strong> A while loop whose condition never becomes False is an <em>infinite loop</em>!</div>
+            `,
+            quiz:[
+              {q:"What does range(3) produce?", options:["1,2,3","0,1,2","0,1,2,3","1,2"], answer:1},
+              {q:"Which loop is best when you don't know how many times to repeat?", options:["for loop","while loop","repeat loop","do loop"], answer:1},
+              {q:"What happens if a while condition never becomes False?", options:["Stops after 100","Error immediately","Runs forever (infinite loop)","Skips the loop"], answer:2},
+            ]
+          },
+          {
+            id:"py-5", title:"Functions", difficulty:"intermediate", duration:"12 min",
+            content:`
+              <p>Functions are reusable blocks of code. Define once, use many times!</p>
+              <h3>Defining a Function</h3>
+              <div class="code-block">def greet(name):
+    """Greets a person by name."""
+    message = "Hello, " + name + "!"
+    return message
+
+result = greet("Alice")
+print(result)  # Hello, Alice!</div>
+              <h3>Multiple Parameters</h3>
+              <div class="code-block">def add(a, b):
+    return a + b
+
+print(add(3, 5))  # 8</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> <code>def</code> defines the function. <code>return</code> sends a value back to the caller.</div>
+            `,
+            quiz:[
+              {q:"What keyword defines a function in Python?", options:["function","func","define","def"], answer:3},
+              {q:"What does the return keyword do?", options:["Prints a value","Sends a value back to the caller","Defines a variable","Ends the program"], answer:1},
+              {q:"What are function inputs called?", options:["Variables","Arguments/Parameters","Returns","Outputs"], answer:1},
+            ]
+          },
+        ]
+      },
+      {
+        id:"javascript", name:"JavaScript", icon:"⚡",
+        desc:"The language of the web. Make pages interactive.", color:"#f7df1e",
+        lessons:[
+          {
+            id:"js-1", title:"Introduction to JavaScript", difficulty:"beginner", duration:"5 min",
+            content:`
+              <p>JavaScript makes websites interactive — clicks, animations, forms — all powered by JS!</p>
+              <h3>Your First Line</h3>
+              <div class="code-block">console.log("Hello, World!");</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> Statements usually end with a semicolon <code>;</code>.</div>
+              <h3>Variables</h3>
+              <div class="code-block">let name = "Alice";   // can change later
+const PI = 3.14159;   // cannot change (constant)
+name = "Bob";         // ✅ works
+// PI = 3;            // ❌ error!</div>
+            `,
+            quiz:[
+              {q:"Which function outputs to the browser console?", options:["print()","alert()","console.log()","output()"], answer:2},
+              {q:"Which keyword creates a constant?", options:["let","var","const","fixed"], answer:2},
+              {q:"What do JS statements usually end with?", options:["Colon :","Semicolon ;","Period .","Comma ,"], answer:1},
+            ]
+          },
+          {
+            id:"js-2", title:"Functions in JavaScript", difficulty:"beginner", duration:"10 min",
+            content:`
+              <p>JavaScript has two main ways to write functions.</p>
+              <h3>Traditional Function</h3>
+              <div class="code-block">function greet(name) {
+    return "Hello, " + name + "!";
+}
+console.log(greet("Alice")); // Hello, Alice!</div>
+              <h3>Arrow Function (Modern)</h3>
+              <div class="code-block">const greet = (name) => {
+    return "Hello, " + name + "!";
+};
+// Shorthand for single expressions:
+const double = (n) => n * 2;
+console.log(double(5)); // 10</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> Arrow functions <code>=></code> are the modern, shorter syntax. Both styles work!</div>
+            `,
+            quiz:[
+              {q:"What symbol is used in arrow functions?", options:["->","=>","=>>","<-"], answer:1},
+              {q:"What keyword defines a traditional function?", options:["func","def","function","fn"], answer:2},
+              {q:"Which is valid arrow function syntax?", options:["function=>(x){}","const f=(x)=>x*2;","arrow f(x){}","def f=(x)=>x;"], answer:1},
+            ]
+          },
+          {
+            id:"js-3", title:"DOM Manipulation", difficulty:"intermediate", duration:"15 min",
+            content:`
+              <p>The DOM lets JavaScript control every element on an HTML page.</p>
+              <h3>Selecting Elements</h3>
+              <div class="code-block">const title = document.getElementById("myTitle");
+const btn   = document.querySelector(".my-button");
+const items = document.querySelectorAll("li");</div>
+              <h3>Changing Content & Style</h3>
+              <div class="code-block">title.textContent = "New Title!";
+btn.style.backgroundColor = "blue";
+btn.style.color = "white";</div>
+              <h3>Handling Events</h3>
+              <div class="code-block">btn.addEventListener("click", function() {
+    alert("Button clicked!");
+});</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> Use <code>#id</code> and <code>.class</code> prefixes inside <code>querySelector()</code>.</div>
+            `,
+            quiz:[
+              {q:"What does DOM stand for?", options:["Document Object Model","Data Object Manager","Dynamic Object Markup","Document Order Map"], answer:0},
+              {q:"Which method uses CSS selectors to find one element?", options:["getElementById","querySelector","getElement","selectElement"], answer:1},
+              {q:"Which method listens for user actions like clicks?", options:["onAction()","watchFor()","addEventListener()","listenClick()"], answer:2},
+            ]
+          },
+        ]
+      },
+      {
+        id:"html", name:"HTML", icon:"🌐",
+        desc:"Structure of every webpage on the internet.", color:"#e34c26",
+        lessons:[
+          {
+            id:"html-1", title:"What is HTML?", difficulty:"beginner", duration:"5 min",
+            content:`
+              <p>HTML (HyperText Markup Language) is the skeleton of every webpage.</p>
+              <h3>HTML Tags</h3>
+              <div class="code-block">&lt;h1&gt;Big Heading&lt;/h1&gt;
+&lt;p&gt;A paragraph of text.&lt;/p&gt;</div>
+              <h3>Basic Page Structure</h3>
+              <div class="code-block">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;My Page&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Hello World!&lt;/h1&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> <code>&lt;head&gt;</code> = invisible info. <code>&lt;body&gt;</code> = visible content.</div>
+            `,
+            quiz:[
+              {q:"What does HTML stand for?", options:["High Tech Markup Language","HyperText Markup Language","HyperText Making Language","Home Tool Markup Language"], answer:1},
+              {q:"Where does visible content go?", options:["<head>","<title>","<body>","<html>"], answer:2},
+              {q:"Which tag creates the largest heading?", options:["<heading>","<h6>","<h1>","<head>"], answer:2},
+            ]
+          },
+          {
+            id:"html-2", title:"Links & Images", difficulty:"beginner", duration:"8 min",
+            content:`
+              <p>Links and images make the web visual and connected using <em>attributes</em>.</p>
+              <h3>Links</h3>
+              <div class="code-block">&lt;a href="https://google.com"&gt;Go to Google&lt;/a&gt;
+&lt;a href="https://google.com" target="_blank"&gt;New tab&lt;/a&gt;</div>
+              <h3>Images</h3>
+              <div class="code-block">&lt;img src="photo.jpg" alt="A sunset" /&gt;
+&lt;img src="logo.png" alt="Logo" width="200" /&gt;</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> Always include <code>alt</code> on images — screen readers use it for accessibility.</div>
+            `,
+            quiz:[
+              {q:"Which attribute on <a> sets the link destination?", options:["src","link","href","url"], answer:2},
+              {q:"Which attribute makes images accessible?", options:["title","alt","desc","caption"], answer:1},
+              {q:"How do you open a link in a new tab?", options:['rel="new"','target="_blank"','open="tab"','window="new"'], answer:1},
+            ]
+          },
+          {
+            id:"html-3", title:"Lists & Tables", difficulty:"beginner", duration:"10 min",
+            content:`
+              <p>Lists and tables organize information clearly.</p>
+              <h3>Unordered List</h3>
+              <div class="code-block">&lt;ul&gt;
+  &lt;li&gt;Apple&lt;/li&gt;
+  &lt;li&gt;Banana&lt;/li&gt;
+&lt;/ul&gt;</div>
+              <h3>Ordered List</h3>
+              <div class="code-block">&lt;ol&gt;
+  &lt;li&gt;Step one&lt;/li&gt;
+  &lt;li&gt;Step two&lt;/li&gt;
+&lt;/ol&gt;</div>
+              <h3>Tables</h3>
+              <div class="code-block">&lt;table&gt;
+  &lt;tr&gt;&lt;th&gt;Name&lt;/th&gt;&lt;th&gt;Age&lt;/th&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;Alice&lt;/td&gt;&lt;td&gt;25&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;</div>
+            `,
+            quiz:[
+              {q:"Which tag creates an unordered list?", options:["<ol>","<ul>","<list>","<li>"], answer:1},
+              {q:"Which tag creates a table row?", options:["<td>","<th>","<tr>","<row>"], answer:2},
+              {q:"Which tag is a list item?", options:["<item>","<list-item>","<it>","<li>"], answer:3},
+            ]
+          },
+        ]
+      },
+      {
+        id:"css", name:"CSS", icon:"🎨",
+        desc:"Style and beautify your HTML pages.", color:"#2965f1",
+        lessons:[
+          {
+            id:"css-1", title:"What is CSS?", difficulty:"beginner", duration:"5 min",
+            content:`
+              <p>CSS controls how HTML looks — colors, fonts, sizes, spacing, and layout.</p>
+              <h3>CSS Syntax</h3>
+              <div class="code-block">selector {
+    property: value;
+}
+
+p {
+    color: blue;
+    font-size: 16px;
+}</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> Use an external <code>.css</code> file for best practice — one file can style many pages.</div>
+            `,
+            quiz:[
+              {q:"What does CSS stand for?", options:["Creative Style Sheets","Cascading Style Sheets","Computer Style Sheets","Colorful Style Sheets"], answer:1},
+              {q:"Which method is best practice?", options:["Inline styles","Style tag","External CSS file","JavaScript styles"], answer:2},
+              {q:"What ends a CSS declaration?", options:["Comma ,","Colon :","Period .","Semicolon ;"], answer:3},
+            ]
+          },
+          {
+            id:"css-2", title:"Selectors & Colors", difficulty:"beginner", duration:"8 min",
+            content:`
+              <p>Selectors target HTML elements to style them.</p>
+              <h3>Common Selectors</h3>
+              <div class="code-block">h1         { color: navy; }      /* element */
+.highlight { background: yellow; } /* class   */
+#header    { font-size: 24px; }    /* ID      */</div>
+              <h3>Color Formats</h3>
+              <div class="code-block">color: red;
+color: #ff0000;
+color: rgb(255, 0, 0);
+color: rgba(255, 0, 0, 0.5);</div>
+            `,
+            quiz:[
+              {q:"How do you select class='btn' in CSS?", options:["#btn",".btn","btn","*btn"], answer:1},
+              {q:"How do you select id='header'?", options:[".header","#header","header","@header"], answer:1},
+              {q:"Which format is rgb()?", options:["Hex","Named","RGB","HSL"], answer:2},
+            ]
+          },
+          {
+            id:"css-3", title:"Flexbox Layout", difficulty:"intermediate", duration:"12 min",
+            content:`
+              <p>Flexbox is the modern way to create layouts in CSS.</p>
+              <h3>Enabling Flexbox</h3>
+              <div class="code-block">.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+}</div>
+              <h3>Key Properties</h3>
+              <div class="code-block">flex-direction: row | column
+justify-content: flex-start | center | space-between
+align-items: flex-start | center | flex-end</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> <code>justify-content</code> = horizontal. <code>align-items</code> = vertical.</div>
+            `,
+            quiz:[
+              {q:"What enables flexbox?", options:["layout:flex","flex:true","display:flex","position:flex"], answer:2},
+              {q:"Which centers items horizontally?", options:["align-items","flex-center","justify-content:center","text-align"], answer:2},
+              {q:"What does flex-direction:column do?", options:["Left to right","Top to bottom","Centers items","Adds spacing"], answer:1},
+            ]
+          },
+        ]
+      },
+      {
+        id:"java", name:"Java", icon:"☕",
+        desc:"Powerful OOP language used everywhere.", color:"#f89820",
+        lessons:[
+          {
+            id:"java-1", title:"Hello, Java!", difficulty:"beginner", duration:"8 min",
+            content:`
+              <p>Java is powerful and structured — used in Android, web backends, and enterprise apps.</p>
+              <h3>First Program</h3>
+              <div class="code-block">public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> Every Java program is inside a <code>class</code>. Execution starts at <code>main()</code>.</div>
+              <h3>Variables in Java</h3>
+              <div class="code-block">int age = 25;
+double gpa = 3.8;
+String name = "Alice";  // capital S!
+boolean passed = true;</div>
+              <p>Unlike Python, Java requires you to declare the <strong>type</strong> of every variable.</p>
+            `,
+            quiz:[
+              {q:"What is the entry point in Java?", options:["start()","run()","main()","begin()"], answer:2},
+              {q:"Which prints text with a new line in Java?", options:["System.out.print()","console.log()","System.out.println()","print()"], answer:2},
+              {q:"How is Java different from Python for variables?", options:["Case insensitive","Requires type declaration","Uses # comments","No variables"], answer:1},
+            ]
+          },
+          {
+            id:"java-2", title:"Classes & Objects", difficulty:"intermediate", duration:"15 min",
+            content:`
+              <p>Java is object-oriented — code is organized around objects with properties and behaviors.</p>
+              <h3>Creating a Class</h3>
+              <div class="code-block">public class Dog {
+    String name;
+    int age;
+
+    public Dog(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public void bark() {
+        System.out.println(name + " says: Woof!");
+    }
+}</div>
+              <h3>Using the Class</h3>
+              <div class="code-block">Dog rex = new Dog("Rex", 3);
+rex.bark();  // Rex says: Woof!</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> Class = blueprint. Object = instance created with <code>new</code>.</div>
+            `,
+            quiz:[
+              {q:"What keyword creates an object?", options:["create","make","new","object"], answer:2},
+              {q:"What is a constructor?", options:["Destroys objects","Called when creating an object","A type of variable","A keyword"], answer:1},
+              {q:"What does 'this' refer to in Java?", options:["The current class instance","A new object","A library","Ends a method"], answer:0},
+            ]
+          },
+        ]
+      },
+      {
+        id:"cpp", name:"C++", icon:"⚙️",
+        desc:"High performance. Used in games & systems.", color:"#00599c",
+        lessons:[
+          {
+            id:"cpp-1", title:"C++ Basics", difficulty:"beginner", duration:"8 min",
+            content:`
+              <p>C++ is one of the fastest languages — used in game engines, OSes, and performance-critical software.</p>
+              <h3>First Program</h3>
+              <div class="code-block">#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    cout &lt;&lt; "Hello, World!" &lt;&lt; endl;
+    return 0;
+}</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> <code>#include</code> imports libraries. <code>cout &lt;&lt;</code> outputs text. <code>return 0</code> means success.</div>
+              <h3>Variables</h3>
+              <div class="code-block">int age = 25;
+double price = 19.99;
+string name = "Alice";
+bool active = true;
+cout &lt;&lt; "Name: " &lt;&lt; name &lt;&lt; endl;</div>
+            `,
+            quiz:[
+              {q:"What does #include <iostream> do?", options:["Creates a file","Imports the I/O library","Defines main","Ends the program"], answer:1},
+              {q:"Which outputs text in C++?", options:["System.out.println","print()","console.log()","cout <<"], answer:3},
+              {q:"What does return 0 mean?", options:["Error","Loop ended","Program ran successfully","Nothing"], answer:2},
+            ]
+          },
+          {
+            id:"cpp-2", title:"Pointers & Memory", difficulty:"advanced", duration:"15 min",
+            content:`
+              <p>Pointers store memory addresses — one of C++'s most powerful features.</p>
+              <h3>Using Pointers</h3>
+              <div class="code-block">int age = 25;
+int* ptr = &age;    // ptr holds the address of age
+cout &lt;&lt; *ptr;       // dereference: prints 25
+
+*ptr = 30;          // change value through pointer
+cout &lt;&lt; age;        // prints 30</div>
+              <div class="key-point"><strong>🔑 Key Point:</strong> <code>&x</code> = address of x. <code>int* p</code> = pointer. <code>*p</code> = value at that address.</div>
+              <h3>Dynamic Memory</h3>
+              <div class="code-block">int* num = new int(42);
+cout &lt;&lt; *num;  // 42
+delete num;    // ALWAYS free memory!
+num = nullptr;</div>
+            `,
+            quiz:[
+              {q:"What does & do in C++?", options:["Multiplies numbers","Gets memory address","Creates variable","Ends statement"], answer:1},
+              {q:"What does * do with a pointer?", options:["Creates pointer","Gets address","Dereferences (gets the value)","Multiplies"], answer:2},
+              {q:"What keyword allocates heap memory?", options:["malloc","alloc","new","create"], answer:2},
+            ]
+          },
+        ]
+      },
+    ];
+
+    /* ============================================================
+       STATE
+    ============================================================ */
+    let progress        = JSON.parse(localStorage.getItem("cq_progress") || "{}");
+    let currentLang     = null;
+    let currentLesson   = null;
+    let currentQuiz     = null;
+    let currentQuestion = 0;
+    let quizScore       = 0;
+
+    /* ============================================================
+       HELPERS
+    ============================================================ */
+    const saveProgress = () => localStorage.setItem("cq_progress", JSON.stringify(progress));
+
+    const getLangPct = (lang) => {
+      const done = lang.lessons.filter(l => progress[l.id]).length;
+      return Math.round((done / lang.lessons.length) * 100);
+    };
+
+    const getOverallPct = () => {
+      const total = LANGUAGES.reduce((a, l) => a + l.lessons.length, 0);
+      return Math.round((Object.keys(progress).length / total) * 100);
+    };
+
+    /* Show one page, hide the rest */
+    function showPage(id) {
+      document.querySelectorAll(".page").forEach(p => {
+        p.classList.remove("active");
+      });
+      const pg = document.getElementById(id);
+      if (!pg) return;
+      pg.classList.add("active");
+      // re-trigger animation
+      pg.style.animation = "none";
+      requestAnimationFrame(() => { pg.style.animation = ""; });
+      // back button visibility
+      document.getElementById("btnBack").style.display =
+        id === "page-home" ? "none" : "block";
+    }
+
+    function goBack() {
+      const cur = document.querySelector(".page.active")?.id;
+      if      (cur === "page-lessons")       showPage("page-home");
+      else if (cur === "page-lesson-detail") showPage("page-lessons");
+      else if (cur === "page-quiz")          showPage("page-lesson-detail");
+      else if (cur === "page-result")        showPage("page-lessons");
+      else showPage("page-home");
+    }
+
+    /* ============================================================
+       HOME
+    ============================================================ */
+    function renderHome() {
+      const grid = document.getElementById("cardsGrid");
+      grid.innerHTML = "";
+      LANGUAGES.forEach(lang => {
+        const pct = getLangPct(lang);
+        const card = document.createElement("div");
+        card.className = "lang-card";
+        card.style.setProperty("--card-color", lang.color);
+        card.innerHTML = `
+          <span class="card-icon">${lang.icon}</span>
+          <div class="card-name">${lang.name}</div>
+          <div class="card-desc">${lang.desc}</div>
+          <div class="card-prog">
+            <div class="card-prog-bar">
+              <div class="card-prog-fill" style="width:${pct}%"></div>
+            </div>
+            <span class="card-prog-pct">${pct}%</span>
+          </div>`;
+        card.addEventListener("click", () => openLanguage(lang));
+        grid.appendChild(card);
+      });
+      const ov = getOverallPct();
+      document.getElementById("overallPercent").textContent = ov + "%";
+      document.getElementById("overallBar").style.width = ov + "%";
+    }
+
+    /* ============================================================
+       LESSONS
+    ============================================================ */
+    function openLanguage(lang) {
+      currentLang = lang;
+      document.getElementById("lessonLangBadge").innerHTML   = `${lang.icon} ${lang.name}`;
+      document.getElementById("lessonPageTitle").textContent = `${lang.name} Lessons`;
+      document.getElementById("editorLangLabel").textContent = lang.name;
+      document.getElementById("codeEditor").value            = starterCode(lang.id);
+      updateLangBar();
+      renderLessons();
+      switchTab("lessons");
+      showPage("page-lessons");
+    }
+
+    function updateLangBar() {
+      const pct = getLangPct(currentLang);
+      document.getElementById("langProgressLabel").textContent = pct + "% complete";
+      document.getElementById("langProgressBar").style.width  = pct + "%";
+    }
+
+    function renderLessons() {
+      const list = document.getElementById("lessonsList");
+      list.innerHTML = "";
+      currentLang.lessons.forEach((lesson, i) => {
+        const done = !!progress[lesson.id];
+        const item = document.createElement("div");
+        item.className = "lesson-item" + (done ? " completed" : "");
+        item.innerHTML = `
+          <div class="lesson-num">${done ? "✓" : i + 1}</div>
+          <div class="lesson-info">
+            <div class="lesson-title">${lesson.title}</div>
+            <div class="lesson-meta">
+              <span class="difficulty ${lesson.difficulty}">${lesson.difficulty}</span>
+              ⏱ ${lesson.duration}
+            </div>
+          </div>
+          <span class="lesson-chevron">›</span>`;
+        item.addEventListener("click", () => openLesson(lesson));
+        list.appendChild(item);
+      });
+    }
+
+    /* ============================================================
+       LESSON DETAIL
+    ============================================================ */
+    function openLesson(lesson) {
+      currentLesson = lesson;
+      document.getElementById("lessonDetailWrap").innerHTML = `
+        <div class="lesson-detail-header">
+          <span class="difficulty ${lesson.difficulty}">${lesson.difficulty}</span>
+          <h2 class="lesson-detail-title">${lesson.title}</h2>
+          <div class="lesson-detail-meta">
+            <span>📖 ${currentLang.name}</span>
+            <span>⏱ ${lesson.duration}</span>
+            <span>${progress[lesson.id] ? "✅ Completed" : "🔓 In Progress"}</span>
+          </div>
+        </div>
+        <div class="lesson-body">${lesson.content}</div>
+        <button class="btn-start-quiz" id="btnStartQuiz">Take the Quiz →</button>`;
+      document.getElementById("btnStartQuiz").addEventListener("click", () => startQuiz(lesson));
+      showPage("page-lesson-detail");
+    }
+
+    /* ============================================================
+       QUIZ
+    ============================================================ */
+    function startQuiz(lesson) {
+      currentQuiz = lesson.quiz;
+      currentQuestion = 0;
+      quizScore = 0;
+      showPage("page-quiz");
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const q     = currentQuiz[currentQuestion];
+      const total = currentQuiz.length;
+      const pct   = Math.round((currentQuestion / total) * 100);
+      document.getElementById("quizWrap").innerHTML = `
+        <div class="quiz-header">
+          <div class="quiz-title">🧠 Quick Quiz</div>
+          <div class="quiz-prog-text">Question ${currentQuestion + 1} of ${total}</div>
+          <div class="prog-wrap" style="margin-top:10px">
+            <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+          </div>
+        </div>
+        <div class="quiz-q-card">
+          <div class="question-text">${q.q}</div>
+          <ul class="options-list">
+            ${q.options.map((opt, i) => `
+              <li><button class="option-btn" data-idx="${i}">${opt}</button></li>
+            `).join("")}
+          </ul>
+          <div class="quiz-feedback" id="quizFeedback"></div>
+        </div>
+        <button class="btn-next-q" id="btnNextQ">
+          ${currentQuestion + 1 < total ? "Next Question →" : "See Results 🎉"}
+        </button>`;
+
+      document.querySelectorAll(".option-btn").forEach(btn => {
+        btn.addEventListener("click", () => handleAnswer(+btn.dataset.idx, q.answer));
+      });
+      document.getElementById("btnNextQ").addEventListener("click", () => {
+        currentQuestion++;
+        currentQuestion < currentQuiz.length ? renderQuestion() : showResult();
+      });
+    }
+
+    function handleAnswer(selected, correct) {
+      document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+      const feedback = document.getElementById("quizFeedback");
+      const nextBtn  = document.getElementById("btnNextQ");
+      if (selected === correct) {
+        quizScore++;
+        document.querySelectorAll(".option-btn")[selected].classList.add("correct");
+        feedback.textContent = "✅ Correct! Great job!";
+        feedback.className   = "quiz-feedback show correct";
+      } else {
+        document.querySelectorAll(".option-btn")[selected].classList.add("wrong");
+        document.querySelectorAll(".option-btn")[correct].classList.add("correct");
+        feedback.textContent = `❌ Not quite. Correct: "${currentQuiz[currentQuestion].options[correct]}"`;
+        feedback.className   = "quiz-feedback show wrong";
+      }
+      nextBtn.classList.add("show");
+    }
+
+    /* ============================================================
+       RESULT
+    ============================================================ */
+    function showResult() {
+      const total  = currentQuiz.length;
+      const pct    = Math.round((quizScore / total) * 100);
+      const passed = pct >= 60;
+      const deg    = Math.round((pct / 100) * 360);
+
+      if (passed && currentLesson) {
+        progress[currentLesson.id] = true;
+        saveProgress();
+        updateLangBar();
+        renderLessons();
+        renderHome();
+      }
+
+      const emoji   = pct === 100 ? "🏆" : pct >= 80 ? "🎉" : pct >= 60 ? "👍" : "💪";
+      const message = pct === 100 ? "Perfect score! You've mastered this lesson!"
+                    : pct >= 80   ? "Excellent work! Solid understanding."
+                    : pct >= 60   ? "Good job! You passed — keep practising."
+                    :               "Almost there! Review the lesson and try again.";
+
+      document.getElementById("resultWrap").innerHTML = `
+        <span class="result-emoji">${emoji}</span>
+        <h2 class="result-title">${passed ? "Lesson Complete!" : "Keep Going!"}</h2>
+        <div class="score-circle" style="--score-deg:${deg}deg">
+          <span class="score-circle-text">${pct}%</span>
+        </div>
+        <p class="result-score">${quizScore} / ${total} correct</p>
+        <p class="result-message">${message}</p>
+        <div class="result-actions">
+          <button class="btn-primary" id="btnContinue">← Back to Lessons</button>
+          ${!passed ? `<button class="btn-secondary" id="btnRetry">🔁 Retry Quiz</button>` : ""}
+        </div>`;
+
+      document.getElementById("btnContinue").addEventListener("click", () => showPage("page-lessons"));
+      const rb = document.getElementById("btnRetry");
+      if (rb) rb.addEventListener("click", () => startQuiz(currentLesson));
+      showPage("page-result");
+    }
+
+    /* ============================================================
+       EDITOR
+    ============================================================ */
+    function starterCode(id) {
+      return ({
+        python:     '# Python starter\nname = "World"\nprint("Hello,", name)\n\n# Try it!',
+        javascript: '// JavaScript starter\nconst name = "World";\nconsole.log("Hello, " + name);\nconsole.log(2 + 2);',
+        html:       '<!-- HTML starter -->\n<h1>Hello World</h1>\n<p>This is a paragraph.</p>',
+        css:        '/* CSS preview */\nbody {\n  background: #1a1a2e;\n  color: white;\n}',
+        java:       '// Java (simulated)\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, Java!");\n        System.out.println("Sum: " + (10 + 20));\n    }\n}',
+        cpp:        '// C++ (simulated)\n#include <iostream>\nusing namespace std;\nint main() {\n    cout << "Hello, C++!" << endl;\n    cout << "5 squared = " << 5*5 << endl;\n    return 0;\n}',
+      })[id] || "// Write your code here";
+    }
+
+    function runCode() {
+      const code   = document.getElementById("codeEditor").value;
+      const output = document.getElementById("editorOutput");
+      const id     = currentLang?.id || "javascript";
+      let result   = "";
+      try {
+        if (id === "javascript") {
+          const logs = [];
+          new Function("console", code)({ log: (...a) => logs.push(a.join(" ")) });
+          result = logs.join("\n") || "(no output)";
+        } else if (id === "python") {
+          const lines = []; let m;
+          const re = /print\(([^)]+)\)/g;
+          while ((m = re.exec(code))) lines.push(m[1].replace(/['"]/g,"").replace(/,\s*/g," "));
+          result = lines.join("\n") || "(no print statements found)";
+        } else if (id === "java") {
+          const lines = []; let m;
+          const re = /System\.out\.println\(([^)]+)\)/g;
+          while ((m = re.exec(code))) lines.push(m[1].replace(/['"]/g,"").replace(/\s*\+\s*/g,""));
+          result = lines.join("\n") || "(no println statements found)";
+        } else if (id === "cpp") {
+          const lines = []; let m;
+          const re = /cout\s*<<\s*([^;]+)/g;
+          while ((m = re.exec(code))) lines.push(m[1].replace(/endl/g,"").replace(/<<\s*/g," ").replace(/['"]/g,"").trim());
+          result = lines.join("\n") || "(no cout statements found)";
+        } else if (id === "html") {
+          result = "[HTML Preview]\n" + code.replace(/<[^>]+>/g,"").replace(/\n{3,}/g,"\n\n").trim();
+        } else if (id === "css") {
+          result = "[CSS Preview]\n" + code;
+        }
+      } catch(e) { result = "⚠ Error: " + e.message; }
+
+      output.textContent = result;
+      output.style.transition = "none";
+      output.style.borderColor = "var(--accent3)";
+      setTimeout(() => { output.style.transition = "border-color .4s"; output.style.borderColor = "var(--border)"; }, 600);
+    }
+
+    /* ============================================================
+       TABS
+    ============================================================ */
+    function switchTab(name) {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+      const t = document.querySelector(`.tab[data-tab="${name}"]`);
+      const c = document.getElementById(`tab-${name}`);
+      if (t) t.classList.add("active");
+      if (c) c.classList.add("active");
+    }
+
+    /* ============================================================
+       THEME
+    ============================================================ */
+    function initTheme() {
+      const saved = localStorage.getItem("cq_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", saved);
+    }
+    function toggleTheme() {
+      const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("cq_theme", next);
+    }
+
+    /* ============================================================
+       BOOT
+    ============================================================ */
+    document.addEventListener("DOMContentLoaded", () => {
+      initTheme();
+      renderHome();
+      document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+      document.getElementById("btnBack").addEventListener("click", goBack);
+      document.querySelector(".tab-bar").addEventListener("click", e => {
+        const tab = e.target.closest(".tab");
+        if (tab) switchTab(tab.dataset.tab);
+      });
+      document.getElementById("btnRun").addEventListener("click", runCode);
+      document.getElementById("btnClear").addEventListener("click", () => {
+        document.getElementById("codeEditor").value = "";
+        document.getElementById("editorOutput").textContent = "Your output will appear here…";
+      });
+      document.getElementById("codeEditor").addEventListener("keydown", e => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); runCode(); }
+      });
+    });
+  </script>
+</body>
+</html>

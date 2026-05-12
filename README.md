@@ -1,2 +1,1 @@
-# Codequest
-A programing launguage learning app
+https://d11byendu.github.io/Codequest/
